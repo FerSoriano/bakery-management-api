@@ -15,6 +15,6 @@ app.include_router(ingredients.router, prefix="/api/v1")
 
 
 @app.get("/")
-def root() -> dict:
+async def root() -> dict:
     return {"msg": "Welcome to the Bakery API"}
 
