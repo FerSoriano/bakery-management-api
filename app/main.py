@@ -1,6 +1,6 @@
 
 from fastapi import FastAPI
-from app.api.v1.routers import ingredients
+from app.api.v1.routers import ingredients, recipes
 
 
 app = FastAPI(
@@ -12,6 +12,7 @@ app = FastAPI(
 
 # routers
 app.include_router(ingredients.router, prefix="/api/v1")
+app.include_router(recipes.router, prefix="/api/v1")
 
 
 @app.get("/")
