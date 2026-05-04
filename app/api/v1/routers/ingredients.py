@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import APIRouter, HTTPException, status
 from app.schemas.ingredient import IngredientResponse, IngredientCreate, IngredientUpdate
 
 from typing import Optional
