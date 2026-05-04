@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter, HTTPException, status, Response
-from app.schemas.ingredient import IngredientResponse, IngredientCreate, IngredientUpdate, IngredientBase
+from app.schemas.ingredient import IngredientResponse, IngredientCreate, IngredientUpdate
 
 from typing import Optional
 
@@ -11,9 +11,9 @@ router = APIRouter(
 
 # Mock data
 MOCK_INGREDIENTS = [
-    {"id": 1, "name": "Flour", "stock_quantity": 50.0, "unit": "kg"},
-    {"id": 2, "name": "Sugar", "stock_quantity": 20.0, "unit": "kg"},
-    {"id": 3, "name": "Vanilla Extract", "stock_quantity": 2.5, "unit": "liters"},
+    {"id": 1, "name": "Flour", "stock_quantity": 50.0, "unit": "kg", "current_unit_price": 40.5},
+    {"id": 2, "name": "Sugar", "stock_quantity": 20.0, "unit": "kg", "current_unit_price": 20.0},
+    {"id": 3, "name": "Vanilla Extract", "stock_quantity": 2.5, "unit": "liters", "current_unit_price": 50.0},
 ]
 
 
@@ -33,7 +33,8 @@ async def get_ingredients():
     """
     Retrieve a list of all ingredients in the bakery's inventory.
     """
-    return MOCK_INGREDIENTS
+    active_ingredients = [i for i in MOCK_INGREDIENTS if i.get("is_active", True)]
+    return active_ingredients
 
 
 @router.get("/{ingredient_id}", response_model=IngredientResponse)
@@ -45,7 +46,7 @@ async def get_ingredient_by_id(ingredient_id: int):
     message and provide a 'Back' or 'Cancel' button routing to 'products_list'.
     """
     for ingredient in MOCK_INGREDIENTS:
-        if ingredient["id"] == ingredient_id:
+        if ingredient.get("is_active", True) and ingredient["id"] == ingredient_id:
             return ingredient
     
     raise HTTPException(
@@ -110,7 +111,7 @@ async def update_ingredient(ingredient_id: int, ingredient: IngredientUpdate):
     return target
 
 
-@router.delete("/{ingredient_id}", status_code=status.HTTP_200_OK)
+@router.delete("/{ingredient_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_ingredient(ingredient_id: int):
     """
     Delete an ingredient from the inventory.
@@ -120,8 +121,8 @@ async def delete_ingredient(ingredient_id: int):
     """
     for i in MOCK_INGREDIENTS:
         if i["id"] == ingredient_id:
-            MOCK_INGREDIENTS.remove(i)
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            i["is_active"] = False
+            return
     
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
