@@ -92,6 +92,12 @@ async def get_recipe_by_id(recipe_id: int):
 
 @router.post("/", response_model=RecipeResponse, status_code=status.HTTP_201_CREATED)
 async def create_recipe(recipe: RecipeCreate):
+    """
+    Create a new recipe in the inventory.
+    
+    UI Note: On successful creation, the frontend should show a success toast 
+    and redirect the user to 'recipes_list'.
+    """
     if is_recipe_duplicated(recipe.name):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -121,3 +127,21 @@ async def create_recipe(recipe: RecipeCreate):
 
     return new_recipe
 
+
+@router.delete("/{recipe_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_recipe(recipe_id: int):
+    """
+    Delete a recipe from the inventory.
+    
+    UI Note: On successful deletion (204), remove the item from the local 
+    state or refetch the list, and ensure the user is on 'recipes_list'.
+    """
+    for recipe in MOCK_RECIPES:
+        if recipe["id"] == recipe_id:
+            recipe["is_active"] = False
+            return
+        
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Recipe with id {recipe_id} not found."
+    )
