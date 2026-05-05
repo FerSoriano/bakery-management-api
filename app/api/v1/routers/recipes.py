@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter, HTTPException, status
-from app.schemas.recipe import RecipeResponse, RecipeCreate
+from app.schemas.recipe import RecipeResponse, RecipeCreate, RecipeUpdate
 from typing import Optional
 
 # temp
@@ -145,3 +145,53 @@ async def delete_recipe(recipe_id: int):
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Recipe with id {recipe_id} not found."
     )
+
+
+@router.patch("/{recipe_id}", response_model=RecipeResponse, status_code=status.HTTP_200_OK)
+async def update_recipe(recipe_id: int, recipe_in: RecipeUpdate):
+    """
+    Partially update an existing recipe in the inventory.
+    
+    UI Note: On successful update or if the user clicks 'Cancel', 
+    the frontend should redirect to the 'recipes_list' route.
+    """
+    target = None
+    for recipe in MOCK_RECIPES:
+        if recipe["id"] == recipe_id:
+            target = recipe
+            break
+        
+    if not target:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ingredient with id '{recipe_id}' not found"
+        )
+    
+    if recipe_in.name is not None:
+        if is_recipe_duplicated(recipe_in.name, recipe_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Recipe with name '{recipe_in.name}' already exists."
+            )
+        
+    updated_data = recipe_in.model_dump(exclude_unset=True)  # get explicit values and ignore nulls
+    
+    if "ingredients" in updated_data:
+        for ingredient_dict in updated_data["ingredients"]:
+            found = False
+            for i in MOCK_INGREDIENTS:
+                if i["id"] == ingredient_dict["ingredient_id"]:
+                    ingredient_dict["ingredient_name"] = i["name"]
+                    ingredient_dict["ingredient_unit"] = i["unit"]
+                    found = True
+                    break
+
+            if not found:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Ingredient with ID {ingredient_dict['ingredient_id']} not found."
+                )
+    
+    target.update(updated_data)
+
+    return target
