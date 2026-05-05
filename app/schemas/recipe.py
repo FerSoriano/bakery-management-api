@@ -1,5 +1,23 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+
+
+class RecipeIngredientBase(BaseModel):
+    ingredient_id: int
+    quantity: float
+
+
+class RecipeIngredientCreate(RecipeIngredientBase):
+    pass
+
+
+class RecipeIngredientUpdate(RecipeIngredientBase):
+    pass
+
+
+class RecipeIngredientResponse(RecipeIngredientBase):
+    ingredient_name: str
+    ingredient_unit: str
 
 
 class RecipeBase(BaseModel):
@@ -8,18 +26,15 @@ class RecipeBase(BaseModel):
     is_active: bool = True
 
 
-class RecipeIngredientCreate(BaseModel):
-    ingredient_id: int
-    quantity: float
-
-
-class RecipeIngredientResponse(RecipeIngredientCreate):
-    ingredient_name: str
-    ingredient_unit: str
-    
-
 class RecipeCreate(RecipeBase):
     ingredients: List[RecipeIngredientCreate]
+
+
+class RecipeUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+    ingredients: Optional[List[RecipeIngredientUpdate]] = None
 
 
 class RecipeResponse(RecipeBase):
