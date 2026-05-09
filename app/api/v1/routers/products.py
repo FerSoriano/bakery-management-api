@@ -182,4 +182,22 @@ async def update_product(product_id: int, product_in: ProductUpdate):
     target["cost"] = get_product_cost_by_recipe(target["recipe_id"])
         
     return target
-        
+
+
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(product_id: int):
+    """
+    Delete a product from the inventory.
+    
+    UI Note: On successful deletion (204), remove the item from the local 
+    state or refetch the list, and ensure the user is on 'products_list'.
+    """
+    for product in MOCK_PRODUCTS:
+        if product["id"] == product_id:
+            product["is_active"] = False
+            return
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Product with id {product_id} not found"
+    )
