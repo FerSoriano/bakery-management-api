@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from app.schemas.product import ProductResponse, ProductCreate, ProductUpdate
+from typing import Optional
 
 #temp
 from .recipes import MOCK_RECIPES
@@ -64,6 +65,21 @@ def get_product_cost_by_recipe(recipe_id: int) -> float:
     return total_cost
 
 
+def is_product_duplicated(product_name: str, exclude_id: Optional[int] = None) -> bool:
+    """
+    Check if a product name already exists in the mock database.
+    Case-insensitive. Optionally excludes a specific ID (useful for updates).
+    """
+    for product in MOCK_PRODUCTS:
+        if product["name"].lower() == product_name.lower() and product["id"] != exclude_id:
+            return True
+    return False
+
+
+def recipe_exists(recipe_id: int) -> bool:
+    return any(recipe["id"] == recipe_id for recipe in MOCK_RECIPES)
+
+
 @router.get("/", response_model=list[ProductResponse])
 async def get_products():
     """
@@ -73,3 +89,97 @@ async def get_products():
     for product in active_products:
         product["cost"] = get_product_cost_by_recipe(product["recipe_id"])
     return active_products
+
+
+@router.get("/{product_id}", response_model=ProductResponse)
+async def get_product_by_id(product_id: int):
+    """
+    Retrieve a specific product by its unique ID.
+    
+    UI Note: If this returns a 404, the frontend should display a 'Not Found' 
+    message and provide a 'Back' or 'Cancel' button routing to 'products_list'.
+    """
+    for product in MOCK_PRODUCTS:
+        if product["id"] == product_id and product.get("is_active", True):
+            product["cost"] = get_product_cost_by_recipe(product["recipe_id"])
+            return product
+    
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Product with id '{product_id}' not found."
+    )
+
+
+@router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+async def create_product(product_in: ProductCreate):
+    """
+    Create a new product and link it to an existing recipe.
+    
+    UI Note: On successful creation (201), redirect the user to 'products_list' 
+    or clear the form for a new entry.
+    """
+    if is_product_duplicated(product_in.name):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Product with name '{product_in.name}' already exists."
+        )
+    
+    if not recipe_exists(product_in.recipe_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot link product to recipe. Recipe with id {product_in.recipe_id} does not exist."
+        )
+
+    new_id = max(p["id"] for p in MOCK_PRODUCTS) + 1 if MOCK_PRODUCTS else 1
+    
+    new_product = product_in.model_dump()
+    new_product["id"] = new_id
+    new_product["cost"] = get_product_cost_by_recipe(new_product["recipe_id"])
+
+    MOCK_PRODUCTS.append(new_product)
+
+    return new_product
+
+
+@router.patch("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+async def update_product(product_id: int, product_in: ProductUpdate):
+    """
+    Partially update an existing Product in the inventory.
+    
+    UI Note: On successful update or if the user clicks 'Cancel', 
+    the frontend should redirect to the 'products_list' route.
+    """
+    target = None
+    for product in MOCK_PRODUCTS:
+        if product["id"] == product_id:
+            target = product
+            break
+
+    if not target:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with id '{product_id}' not found"
+        )
+
+    if product_in.name is not None:
+        if is_product_duplicated(product_in.name, product_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Product with name '{product_in.name}' already exists."
+            )
+    
+    updated_data = product_in.model_dump(exclude_unset=True)
+
+    if product_in.recipe_id is not None:
+        if not recipe_exists(product_in.recipe_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot link product to recipe. Recipe with id {product_in.recipe_id} does not exist."
+            )
+    
+    target.update(updated_data)
+
+    target["cost"] = get_product_cost_by_recipe(target["recipe_id"])
+        
+    return target
+        
