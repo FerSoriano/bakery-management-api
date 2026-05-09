@@ -56,21 +56,21 @@ async def get_ingredient_by_id(ingredient_id: int):
 
 
 @router.post("/", response_model=IngredientResponse, status_code=status.HTTP_201_CREATED)
-async def create_ingredient(ingredient: IngredientCreate):
+async def create_ingredient(ingredient_in: IngredientCreate):
     """
     Create a new ingredient in the inventory.
     
     UI Note: On successful creation, the frontend should show a success toast 
     and redirect the user to 'products_list'.
     """
-    if is_name_duplicated(ingredient.name):
+    if is_name_duplicated(ingredient_in.name):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Ingredient with name '{ingredient.name}' already exists."
+                detail=f"Ingredient with name '{ingredient_in.name}' already exists."
             )
 
     new_id = max(i["id"] for i in MOCK_INGREDIENTS) + 1 if MOCK_INGREDIENTS else 1
-    new_ingredient = ingredient.model_dump() # convert model to dict
+    new_ingredient = ingredient_in.model_dump() # convert model to dict
     new_ingredient["id"] = new_id
 
     MOCK_INGREDIENTS.append(new_ingredient)
