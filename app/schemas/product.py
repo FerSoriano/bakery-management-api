@@ -7,7 +7,8 @@ class ProductCategory(str, Enum):
     CAKES = "Cakes"
     SLICES = "Slices"
     INDIVIDUAL_DESSERTS = "Individual Desserts"
-    BEVERAGES = "Beverages" 
+    BEVERAGES = "Beverages"
+    OTHERS = "Others"
 
 
 class ProductBase(BaseModel):
