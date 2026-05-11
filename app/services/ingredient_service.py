@@ -10,26 +10,30 @@ class IngredientService:
     """
 
     @staticmethod
-    async def get_all(db: AsyncSession):
+    async def get_all(db: AsyncSession, include_inactive: bool = False):
         """
-        Retrieve all active ingredients from the database.
+        Retrieve ingredients. Filters out inactive ones unless explicitly requested.
         """
-        query = select(Ingredient).where(Ingredient.is_active == True)
+        query = select(Ingredient)
+        
+        if not include_inactive:
+            query = query.where(Ingredient.is_active == True)
+
         result = await db.execute(query)
         
-        # scalars().all() extracts the objects from the Result wrapper
         return result.scalars().all()
 
 
     @staticmethod
-    async def get_by_id(db: AsyncSession, ingredient_id: int):
+    async def get_by_id(db: AsyncSession, ingredient_id: int, include_inactive: bool = False):
         """
         Retrieve a single active ingredient by its ID.
         """
-        query = select(Ingredient).where(
-            Ingredient.id == ingredient_id, 
-            Ingredient.is_active == True
-        )
+        query = select(Ingredient).where(Ingredient.id == ingredient_id)
+
+        if not include_inactive:
+            query = query.where(Ingredient.is_active == True)
+
         result = await db.execute(query)
         
         # scalar_one_or_none() returns the object if found, or None if it doesn't exist
