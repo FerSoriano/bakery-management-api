@@ -11,7 +11,7 @@ class Ingredient(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
-    stock = Column(Float, default=0.0)
+    stock_quantity = Column(Float, default=0.0)
     unit = Column(String, nullable=False)
     current_unit_price = Column(Float, nullable=False)
     is_active = Column(Boolean, default=True)
