@@ -22,22 +22,29 @@ MOCK_INGREDIENTS = [
 
 
 @router.get("/", response_model=list[IngredientResponse])
-async def get_ingredients(db: AsyncSession = Depends(get_db)):
+async def get_ingredients(
+    include_inactive: bool = False,
+    db: AsyncSession = Depends(get_db)
+):
     """
     Retrieve a list of all ingredients in the bakery's inventory.
     """
-    return await IngredientService.get_all(db)
+    return await IngredientService.get_all(db, include_inactive)
 
 
 @router.get("/{ingredient_id}", response_model=IngredientResponse)
-async def get_ingredient_by_id(ingredient_id: int, db: AsyncSession = Depends(get_db)):
+async def get_ingredient_by_id(
+    ingredient_id: int, 
+    include_inactive: bool = False,
+    db: AsyncSession = Depends(get_db)
+):
     """
     Retrieve a specific ingredient by its unique ID.
     
     UI Note: If this returns a 404, the frontend should display a 'Not Found' 
     message and provide a 'Back' or 'Cancel' button routing to 'products_list'.
     """
-    db_ingredient = await IngredientService.get_by_id(db, ingredient_id)
+    db_ingredient = await IngredientService.get_by_id(db, ingredient_id, include_inactive)
 
     if not db_ingredient:    
         raise HTTPException(
@@ -94,6 +101,31 @@ async def update_ingredient(
             )
 
     update_data = ingredient.model_dump(exclude_unset=True)  # get explicit values and ignore nulls
+    updated_ingredient = await IngredientService.update(db, db_ingredient, update_data)
+
+    return updated_ingredient
+
+
+@router.patch("/{ingredient_id}/reactivate", response_model=IngredientResponse, status_code=status.HTTP_200_OK)
+async def reactivate_ingredient(
+    ingredient_id: int, 
+    ingredient: IngredientUpdate,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Reactivate a previously deleted ingredient.
+    """
+    db_ingredient = await IngredientService.get_by_id(db, ingredient_id, True)
+
+    if not db_ingredient:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ingredient with id '{ingredient_id}' not found"
+        )
+
+    update_data = ingredient.model_dump(exclude_unset=True)
+    update_data["is_active"] = True
+
     updated_ingredient = await IngredientService.update(db, db_ingredient, update_data)
 
     return updated_ingredient
