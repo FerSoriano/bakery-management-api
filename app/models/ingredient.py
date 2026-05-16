@@ -13,6 +13,7 @@ class Ingredient(Base):
     name = Column(String, unique=True, index=True, nullable=False)
     stock_quantity = Column(Float, default=0.0)
     unit = Column(String, nullable=False)
+    category = Column(String, nullable=False)
     current_unit_price = Column(Float, nullable=False)
     is_active = Column(Boolean, default=True)
     
