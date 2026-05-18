@@ -4,11 +4,11 @@ from enum import Enum
 
 
 class ProductCategory(str, Enum):
-    CAKES = "Cakes"
-    SLICES = "Slices"
-    INDIVIDUAL_DESSERTS = "Individual Desserts"
-    BEVERAGES = "Beverages"
-    OTHERS = "Others"
+    PASTELES = "Pasteles"
+    REBANADAS = "Rebanadas"
+    POSTRES_INDIVIDUALES = "Postes Individuales"
+    BEBIDAS = "Bebidas"
+    OTROS = "Otros"
 
 
 class ProductBase(BaseModel):
