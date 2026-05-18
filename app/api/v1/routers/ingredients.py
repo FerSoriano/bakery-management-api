@@ -76,7 +76,7 @@ async def create_ingredient(ingredient_in: IngredientCreate, db: AsyncSession = 
 @router.patch("/{ingredient_id}", response_model=IngredientResponse, status_code=status.HTTP_200_OK)
 async def update_ingredient(
     ingredient_id: int, 
-    ingredient: IngredientUpdate,
+    ingredient_in: IngredientUpdate,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -92,15 +92,15 @@ async def update_ingredient(
             detail=f"Ingredient with id '{ingredient_id}' not found"
         )
     
-    if ingredient.name is not None and ingredient.name != db_ingredient.name:
-        existing_name = await IngredientService.get_by_name(db, ingredient.name)
+    if ingredient_in.name is not None and ingredient_in.name != db_ingredient.name:
+        existing_name = await IngredientService.get_by_name(db, ingredient_in.name)
         if existing_name:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Ingredient with name '{ingredient.name}' already exists."
+                detail=f"Ingredient with name '{ingredient_in.name}' already exists."
             )
 
-    update_data = ingredient.model_dump(exclude_unset=True)  # get explicit values and ignore nulls
+    update_data = ingredient_in.model_dump(exclude_unset=True)  # get explicit values and ignore nulls
     updated_ingredient = await IngredientService.update(db, db_ingredient, update_data)
 
     return updated_ingredient
