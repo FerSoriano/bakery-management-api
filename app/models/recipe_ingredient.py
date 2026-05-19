@@ -34,3 +34,11 @@ class RecipeIngredient(Base):
 
     def __repr__(self):
         return f"<RecipeIngredient(recipe_id={self.recipe_id}, ingredient_id={self.ingredient_id}, quantity={self.quantity})>"
+
+    @property  # virtual attribute
+    def ingredient_name(self) -> str:
+        return self.ingredient.name if self.ingredient else "Unknown"
+
+    @property  # virtual attribute
+    def ingredient_unit(self) -> str:
+        return self.ingredient.unit if self.ingredient else "Unknown"

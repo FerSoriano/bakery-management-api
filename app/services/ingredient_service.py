@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ingredient import Ingredient
 from app.schemas.ingredient import IngredientCreate
 
+from typing import List
+
 class IngredientService:
     """
     Handles all business logic and database operations for Ingredients.
@@ -25,7 +27,11 @@ class IngredientService:
 
 
     @staticmethod
-    async def get_by_id(db: AsyncSession, ingredient_id: int, include_inactive: bool = False):
+    async def get_by_id(
+        db: AsyncSession,
+        ingredient_id: int, 
+        include_inactive: bool = False
+    ) -> Ingredient | None:
         """
         Retrieve a single active ingredient by its ID.
         """
@@ -41,14 +47,34 @@ class IngredientService:
     
 
     @staticmethod
-    async def get_by_name(db: AsyncSession, ingredient_name: str):
+    async def get_multiple_by_ids(
+        db: AsyncSession, 
+        ingredient_ids: List[int],
+        include_inactive: bool = False
+    ):
+        query = select(Ingredient).where(Ingredient.id.in_(ingredient_ids))
+        
+        if not include_inactive:
+            query = query.where(Ingredient.is_active == True)
+
+        result = await db.execute(query)    
+        return result.scalars().all()
+    
+
+    @staticmethod
+    async def get_by_name(
+        db: AsyncSession, 
+        ingredient_name: str,
+        include_inactive: bool = False
+    ):
         """
-        Retrieve a single active ingredient by its Name.
+        Retrieves a single ingredient by its name.
         """
-        query = select(Ingredient).where(
-            Ingredient.name.ilike(ingredient_name),
-            Ingredient.is_active == True
-        )
+        query = select(Ingredient).where(Ingredient.name.ilike(ingredient_name))
+
+        if not include_inactive:
+            query.where(Ingredient.is_active == True)
+
         result = await db.execute(query)
 
         return result.scalar_one_or_none()
@@ -72,7 +98,11 @@ class IngredientService:
     
 
     @staticmethod
-    async def update(db: AsyncSession, db_ingredient: Ingredient, update_data: dict):
+    async def update(
+        db: AsyncSession, 
+        db_ingredient: Ingredient, 
+        update_data: dict
+    ) -> Ingredient:
         """
         Update an existing ingredient. 
         Expects the database object and a dictionary of the updated fields.
@@ -92,7 +122,7 @@ class IngredientService:
         Perform a soft delete by setting is_active to False.
         This preserves historical data for recipes that might have used this ingredient.
         """
-        db_ingredient.is_active = False
+        db_ingredient.is_active = False  # type: ignore
         await db.commit()
         
         return
