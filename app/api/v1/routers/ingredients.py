@@ -12,14 +12,6 @@ router = APIRouter(
     tags=["ingredients"]
 )
 
-# Mock data
-# TODO: Delete mock data
-MOCK_INGREDIENTS = [
-    {"id": 1, "name": "Flour", "stock_quantity": 50.0, "unit": "kg", "current_unit_price": 40.5},
-    {"id": 2, "name": "Sugar", "stock_quantity": 20.0, "unit": "kg", "current_unit_price": 20.0},
-    {"id": 3, "name": "Vanilla Extract", "stock_quantity": 2.5, "unit": "liters", "current_unit_price": 50.0},
-]
-
 
 @router.get("/", response_model=list[IngredientResponse])
 async def get_ingredients(
