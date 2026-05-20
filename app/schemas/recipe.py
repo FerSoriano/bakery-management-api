@@ -22,7 +22,7 @@ class RecipeIngredientResponse(RecipeIngredientBase):
 
 class RecipeBase(BaseModel):
     name: str
-    description: str
+    instructions: str
     is_active: bool = True
 
 
@@ -32,7 +32,7 @@ class RecipeCreate(RecipeBase):
 
 class RecipeUpdate(BaseModel):
     name: Optional[str] = None
-    description: Optional[str] = None
+    instructions: Optional[str] = None
     is_active: Optional[bool] = None
     ingredients: Optional[List[RecipeIngredientUpdate]] = None
 

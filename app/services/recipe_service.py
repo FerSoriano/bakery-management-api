@@ -81,7 +81,7 @@ class RecipeService:
         """
         new_recipe = Recipe(
             name=recipe_in.name,
-            description=recipe_in.description,
+            instructions=recipe_in.instructions,
             is_active=recipe_in.is_active
         )
 
