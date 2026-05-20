@@ -29,43 +29,42 @@ async def populate_database():
     
     async with AsyncSessionLocal() as db:
         try:
-            # 1. CREAR INGREDIENTES DE PRUEBA
             print("📦 Inserting ingredients...")
             
             harina_in = IngredientCreate(
                 name="Harina de Trigo",
-                stock_quantity=50.0,
+                stock_quantity=12.0,
                 unit="kg",  # type: ignore
                 category="secos",  # type: ignore
-                current_unit_price=1.20,
+                current_unit_price=25.50,
             )
             mantequilla_in = IngredientCreate(
                 name="Mantequilla",
-                stock_quantity=20.0,
+                stock_quantity=5.0,
                 unit="kg",  # type: ignore
                 category="lacteos",  # type: ignore
-                current_unit_price=3.50,
+                current_unit_price=92.00,
             )
             azucar_in = IngredientCreate(
                 name="Azúcar Refinada",
-                stock_quantity=30.0,
+                stock_quantity=10.0,
                 unit="kg",  # type: ignore
                 category="secos",  # type: ignore
-                current_unit_price=1.10,
+                current_unit_price=22.00,
             )
             leche_in = IngredientCreate(
                 name="Leche Entera",
-                stock_quantity=100.0,
+                stock_quantity=25.0,
                 unit="l",  # type: ignore
                 category="lacteos",  # type: ignore
-                current_unit_price=0.80,
+                current_unit_price=14.50,
             )
             huevos_in = IngredientCreate(
                 name="Huevo",
-                stock_quantity=200.0,
+                stock_quantity=48.0,
                 unit="pza",  # type: ignore
                 category="secos",  # type: ignore
-                current_unit_price=0.20,
+                current_unit_price=3.50,
             )
 
             db_harina = await get_or_create_ingredient(db, harina_in)
@@ -76,29 +75,27 @@ async def populate_database():
             
             print("✅ Ingredients inserted successfully.")
 
-            # 2. CREAR RECETAS DE PRUEBA
             print("🥣 Inserting recipes...")
 
-            # Receta 1: Croissant
             croissant_in = RecipeCreate(
                 name="Croissant de Mantequilla",
                 instructions="Mezclar harina, leche y azúcar. Amasar y dejar fermentar. Laminar con la mantequilla fría dando 3 pliegues. Hornear a 190°C por 22 minutos.",
                 ingredients=[
-                    RecipeIngredientCreate(ingredient_id=db_harina.id, quantity=0.500),       # 500g  # type: ignore
-                    RecipeIngredientCreate(ingredient_id=db_mantequilla.id, quantity=0.250),  # 250g  # type: ignore
-                    RecipeIngredientCreate(ingredient_id=db_leche.id, quantity=0.300),        # 300ml # type: ignore
-                    RecipeIngredientCreate(ingredient_id=db_azucar.id, quantity=0.060)        # 60g   # type: ignore
+                    RecipeIngredientCreate(ingredient_id=db_harina.id, quantity=0.500),  # type: ignore
+                    RecipeIngredientCreate(ingredient_id=db_mantequilla.id, quantity=0.250),  # type: ignore
+                    RecipeIngredientCreate(ingredient_id=db_leche.id, quantity=0.300),  # type: ignore
+                    RecipeIngredientCreate(ingredient_id=db_azucar.id, quantity=0.060)  # type: ignore
                 ]
             )
             
-            # Receta 2: Pan de Caja Básico
             pan_caja_in = RecipeCreate(
                 name="Pan de Caja Artesanal",
                 instructions="Mezclar ingredientes, amasar hasta desarrollar ventana. Fermentación en bloque de 1 hora. Formar en molde y hornear a 200°C por 35 minutos.",
                 ingredients=[
                     RecipeIngredientCreate(ingredient_id=db_harina.id, quantity=0.600),  # type: ignore
-                    RecipeIngredientCreate(ingredient_id=db_leche.id, quantity=0.350),   # type: ignore
-                    RecipeIngredientCreate(ingredient_id=db_azucar.id, quantity=0.030)   # type: ignore
+                    RecipeIngredientCreate(ingredient_id=db_leche.id, quantity=0.350),  # type: ignore
+                    RecipeIngredientCreate(ingredient_id=db_azucar.id, quantity=0.030),  # type: ignore
+                    RecipeIngredientCreate(ingredient_id=db_huevos.id, quantity=2.0)  # type: ignore
                 ]
             )
 
@@ -113,5 +110,4 @@ async def populate_database():
             await db.rollback()
 
 if __name__ == "__main__":
-    # Ejecutamos el script de forma asíncrona
     asyncio.run(populate_database())
