@@ -101,13 +101,13 @@ async def update_ingredient(
 @router.patch("/{ingredient_id}/reactivate", response_model=IngredientResponse, status_code=status.HTTP_200_OK)
 async def reactivate_ingredient(
     ingredient_id: int, 
-    ingredient: IngredientUpdate,
+    ingredient_in: IngredientUpdate,
     db: AsyncSession = Depends(get_db)
 ):
     """
     Reactivate a previously deleted ingredient.
     """
-    db_ingredient = await IngredientService.get_by_id(db, ingredient_id, True)
+    db_ingredient = await IngredientService.get_by_id(db, ingredient_id, include_inactive=True)
 
     if not db_ingredient:
         raise HTTPException(
@@ -115,7 +115,7 @@ async def reactivate_ingredient(
             detail=f"Ingredient with id '{ingredient_id}' not found"
         )
 
-    update_data = ingredient.model_dump(exclude_unset=True)
+    update_data = ingredient_in.model_dump(exclude_unset=True)
     update_data["is_active"] = True
 
     updated_ingredient = await IngredientService.update(db, db_ingredient, update_data)
