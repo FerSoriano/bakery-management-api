@@ -1,10 +1,13 @@
 
 from fastapi import FastAPI
-from app.api.v1.routers import ingredients, recipes, products
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.v1.routers import ingredients, recipes, products, health
 
 from contextlib import asynccontextmanager
+from app.core.config import settings
 from app.db.database import engine, Base
-import app.models
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,8 +30,18 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# CORS
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], 
+    allow_headers=['*']
+)
+
 
 # routers
+app.include_router(health.router) 
 app.include_router(ingredients.router, prefix="/api/v1")
 app.include_router(recipes.router, prefix="/api/v1")
 app.include_router(products.router, prefix="/api/v1")
