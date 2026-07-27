@@ -73,7 +73,7 @@ class IngredientService:
         query = select(Ingredient).where(Ingredient.name.ilike(ingredient_name))
 
         if not include_inactive:
-            query.where(Ingredient.is_active == True)
+            query = query.where(Ingredient.is_active == True)
 
         result = await db.execute(query)
 
