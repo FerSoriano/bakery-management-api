@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# El .gitignore de la raíz es el de Python y trae `lib/` sin anclar, así que
+# también atrapa este directorio de código fuente. Aquí se re-incluye.
+!src/lib/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
